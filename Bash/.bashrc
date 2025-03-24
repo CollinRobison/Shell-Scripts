@@ -3,6 +3,8 @@
 
 alias cls="clear" 
 
+alias gitgonefeature="git branch | grep -v "master" | grep -v "main" | xargs git branch -D"
+
 ## Functions
 
 function gitcode () {
@@ -34,4 +36,13 @@ function gitcode () {
     else
         echo "there was an error"
     fi
+}
+
+function list-alias() {
+    # function to list all of my git aliases and the definitions of what they do. 
+    printf "
+    cls = Clear all lines. 
+    gitgonefeature = Remove all git branches except main and master. 
+    gitcode = Pull current git branch to match remote and then open VS Code for a project. 
+    "
 }
