@@ -46,3 +46,5 @@ function list-alias() {
     gitcode = Pull current git branch to match remote and then open VS Code for a project. 
     "
 }
+
+alias alias-list="list-alias"
