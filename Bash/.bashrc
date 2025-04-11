@@ -1,4 +1,3 @@
-
 ## Simple Aliases
 
 alias cls="clear" 
@@ -38,12 +37,15 @@ function gitcode () {
     fi
 }
 
+alias flap="$(dirname "${BASH_SOURCE[0]}")/flappy.sh"
+
 function list-alias() {
     # function to list all of my git aliases and the definitions of what they do. 
     printf "
     cls = Clear all lines. 
     gitgonefeature = Remove all git branches except main and master. 
     gitcode = Pull current git branch to match remote and then open VS Code for a project. 
+    flap = Play Flappy Bird in the terminal.
     "
 }
 
