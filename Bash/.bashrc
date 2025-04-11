@@ -4,6 +4,11 @@ alias cls="clear"
 
 alias gitgonefeature="git branch | grep -v "master" | grep -v "main" | xargs git branch -D"
 
+## Terminal Games
+
+alias brickbreak="$(dirname "${BASH_SOURCE[0]}")/brick_breaker.sh"
+alias flap="$(dirname "${BASH_SOURCE[0]}")/flappy.sh"
+
 ## Functions
 
 function gitcode () {
@@ -37,15 +42,21 @@ function gitcode () {
     fi
 }
 
-alias flap="$(dirname "${BASH_SOURCE[0]}")/flappy.sh"
+
 
 function list-alias() {
     # function to list all of my git aliases and the definitions of what they do. 
     printf "
-    cls = Clear all lines. 
-    gitgonefeature = Remove all git branches except main and master. 
+    Aliases and Functions:
+    ---------------------
+    cls = Clear the terminal screen.
     gitcode = Pull current git branch to match remote and then open VS Code for a project. 
-    flap = Play Flappy Bird in the terminal.
+    gitgonefeature = Remove all git branches except main and master. 
+    
+    Terminal Games:
+    -------------
+    brickbreak = play the brick breaker game in the terminal.
+    flap = Run the flappy bird game in the terminal.
     "
 }
 
