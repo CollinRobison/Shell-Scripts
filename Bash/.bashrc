@@ -1,3 +1,7 @@
+if [ -z "$SHELL_SCRIPTS_ROOT" ]; then
+  echo "Error: SHELL_SCRIPTS_ROOT environment variable is not set. Please set it to the absolute path of your Shell-Scripts folder."
+  return 1
+fi
 ## Simple Aliases
 
 
@@ -10,8 +14,40 @@ alias gitgonefeature="git branch | grep -v 'master' | grep -v 'main' | xargs git
 
 
 # Cross-shell (Bash/Zsh) brickbreak and flap functions
-alias brickbreak="$(dirname "${BASH_SOURCE[0]}")/brick_breaker.sh"
-alias flap="$(dirname "${BASH_SOURCE[0]}")/flappy.sh"
+find_bash5() {
+  if [ -x "/opt/homebrew/bin/bash" ]; then
+    echo "/opt/homebrew/bin/bash"
+  elif [ -x "/usr/local/bin/bash" ]; then
+    echo "/usr/local/bin/bash"
+  elif command -v bash >/dev/null 2>&1; then
+    # Check if bash is version 4+
+    bash_path="$(command -v bash)"
+    bash_ver="$($bash_path --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\\.[0-9]+')"
+    if [[ "$bash_ver" =~ ^[4-9] ]]; then
+      echo "$bash_path"
+    fi
+  fi
+}
+
+brickbreak() {
+  local bash5
+  bash5="$(find_bash5)"
+  if [ -z "$bash5" ]; then
+    echo "Error: Bash 4+ is required to run brick_breaker.sh. Please install Bash 5+ (brew install bash on macOS)."
+    return 1
+  fi
+  "$bash5" "$SHELL_SCRIPTS_ROOT/Bash/brick_breaker.sh"
+}
+
+flap() {
+  local bash5
+  bash5="$(find_bash5)"
+  if [ -z "$bash5" ]; then
+    echo "Error: Bash 4+ is required to run flappy.sh. Please install Bash 5+ (brew install bash on macOS)."
+    return 1
+  fi
+  "$bash5" "$SHELL_SCRIPTS_ROOT/Bash/flappy.sh"
+}
 ## Functions
 
 
