@@ -19,11 +19,21 @@ find_bash5() {
     echo "/opt/homebrew/bin/bash"
   elif [ -x "/usr/local/bin/bash" ]; then
     echo "/usr/local/bin/bash"
-  elif command -v bash >/dev/null 2>&1; then
-    # Check if bash is version 4+
+  elif [ -n "$WINDIR" ]; then
+    # On Windows, prefer the current bash if version >= 3
     bash_path="$(command -v bash)"
-    bash_ver="$($bash_path --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\\.[0-9]+')"
-    if [[ "$bash_ver" =~ ^[4-9] ]]; then
+    bash_ver_full="$($bash_path --version 2>/dev/null | head -n1)"
+    # Try to extract version as X.Y or X
+    bash_ver_num="$(echo "$bash_ver_full" | grep -oE '[0-9]+(\.[0-9]+)?' | head -n1)"
+    if [[ "$bash_ver_num" =~ ^([3-9]|[1-9][0-9])(\.[0-9]+)?$ ]]; then
+      echo "$bash_path"
+    fi
+  elif command -v bash >/dev/null 2>&1; then
+    # On other systems, require Bash 4+
+    bash_path="$(command -v bash)"
+    bash_ver_full="$($bash_path --version 2>/dev/null | head -n1)"
+    bash_ver_num="$(echo "$bash_ver_full" | grep -oE '[0-9]+(\.[0-9]+)?' | head -n1)"
+    if [[ "$bash_ver_num" =~ ^([4-9]|[1-9][0-9])(\.[0-9]+)?$ ]]; then
       echo "$bash_path"
     fi
   fi

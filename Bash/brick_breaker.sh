@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 # Terminal-based Brick Breaker Game
@@ -155,10 +154,10 @@ while true; do
   input=""
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS: -t accepts float
-    read -t 0.1 -n 1 input
+    read -t 0.05 -n 1 input  # Faster ball: shorter delay
   else
     # Linux/WSL/Git Bash: -t accepts int (0.1 may not work, fallback to 1)
-    read -t 1 -n 1 input
+    read -t 0.5 -n 1 input  # Faster ball: shorter delay
   fi
   case $input in
     a) move_paddle "left" ;;
