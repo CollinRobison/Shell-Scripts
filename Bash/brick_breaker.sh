@@ -153,11 +153,11 @@ while true; do
   # Portable read: -t expects seconds (float on macOS, int on Git Bash)
   input=""
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS: -t accepts float
-    read -t 0.05 -n 1 input  # Faster ball: shorter delay
+    # macOS: -t accepts float; use a longer delay for slower gameplay
+    read -t 0.15 -n 1 input  # Slower ball on Mac
   else
-    # Linux/WSL/Git Bash: -t accepts int (0.1 may not work, fallback to 1)
-    read -t 0.5 -n 1 input  # Faster ball: shorter delay
+    # Linux/WSL/Git Bash: -t accepts int or float
+    read -t 0.05 -n 1 input  # Faster ball elsewhere
   fi
   case $input in
     a) move_paddle "left" ;;
