@@ -1,8 +1,19 @@
-#!/bin/bash
+
+#!/usr/bin/env bash
 
 # Terminal-based Brick Breaker Game
 
 ## I didn't create this, it was a copilot prompt. 
+
+declare -A bricks
+declare -A board
+
+# Bash version check for associative arrays (Bash 4+ required)
+if ((BASH_VERSINFO[0] < 4)); then
+  echo "This game requires Bash version 4 or higher (for associative arrays)."
+  echo "On macOS, install Bash 5+ with: brew install bash"
+  exit 1
+fi
 
 # Initialize game variables
 rows=20
@@ -17,7 +28,6 @@ score=0
 lives=3
 
 declare -A bricks
-
 declare -A board
 
 # Function to initialize the game board
@@ -45,9 +55,18 @@ initialize_board() {
   board[$ball_y,$ball_x]="O"
 }
 
+# Function to clear the screen (portable)
+clear_screen() {
+  if command -v tput >/dev/null 2>&1; then
+    tput reset
+  else
+    clear
+  fi
+}
+
 # Function to draw the game board
 draw_board() {
-  clear
+  clear_screen
   echo "Score: $score Lives: $lives"
   for ((i=0; i<rows; i++)); do
     for ((j=0; j<cols; j++)); do
@@ -132,7 +151,15 @@ while true; do
   draw_board
 
   # Read player input
-  read -t 0.1 -n 1 input
+  # Portable read: -t expects seconds (float on macOS, int on Git Bash)
+  input=""
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS: -t accepts float
+    read -t 0.1 -n 1 input
+  else
+    # Linux/WSL/Git Bash: -t accepts int (0.1 may not work, fallback to 1)
+    read -t 1 -n 1 input
+  fi
   case $input in
     a) move_paddle "left" ;;
     d) move_paddle "right" ;;
