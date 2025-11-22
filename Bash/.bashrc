@@ -10,6 +10,8 @@ alias cls="clear"
 
 alias gitgonefeature="git branch | grep -v 'master' | grep -v 'main' | xargs git branch -D"
 
+alias h="history"
+
 ## Terminal Games
 
 
@@ -107,7 +109,14 @@ function gitcode () {
 
 function list-alias() {
     # function to list all of my git aliases and the definitions of what they do. 
-    printf "\nAliases and Functions:\n---------------------\ncls = Clear the terminal screen.\ngitcode = Pull current git branch to match remote and then open VS Code for a project. \ngitgonefeature = Remove all git branches except main and master. \n\nTerminal Games:\n-------------\nbrickbreak = play the brick breaker game in the terminal.\nflap = Run the flappy bird game in the terminal.\n"
+    printf "\nAliases and Functions:\n---------------------\n
+    cls = Clear the terminal screen.\n
+    gitcode = Pull current git branch to match remote and then open VS Code for a project. \n
+    gitgonefeature = Remove all git branches except main and master. \n 
+    h = history command. \n
+    \n\nTerminal Games:\n-------------\n
+    brickbreak = play the brick breaker game in the terminal.\n
+    flap = Run the flappy bird game in the terminal.\n"
 }
 
 alias alias-list="list-alias"
