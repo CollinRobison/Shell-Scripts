@@ -8,6 +8,8 @@ fi
 # Cross-platform clear alias
 alias cls="clear"
 
+alias g="git"
+
 alias gitgonefeature="git branch | grep -v 'master' | grep -v 'main' | xargs git branch -D"
 
 alias h="history"
@@ -111,6 +113,7 @@ function list-alias() {
     # function to list all of my git aliases and the definitions of what they do. 
     printf "\nAliases and Functions:\n---------------------\n
     cls = Clear the terminal screen.\n
+    g = git \n
     gitcode = Pull current git branch to match remote and then open VS Code for a project. \n
     gitgonefeature = Remove all git branches except main and master. \n 
     h = history command. \n
