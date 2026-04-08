@@ -8,25 +8,19 @@
 #===============================================================================
 
 autoload -U colors && colors
-autoload -U promptinit
 autoload -Uz vcs_info
 
-# Make the colors easier to reference
-typeset -AHg FG BG
-
-for color in {000..255}; do
-    FG[$color]="%{[38;5;${color}m%}"
-    BG[$color]="%{[48;5;${color}m%}"
-done
-
-local reset white gray green red yellow blue cyan magenta black
+# Define prompt colors as globals so they survive outside source scope
+# Using direct escape sequences avoids the 256-iteration FG/BG build loop
+typeset -g reset gray green red yellow cyan blue
+local _e=$'\033'
 reset="%{${reset_color}%}"
-gray="%{$FG[250]%}"
-green="%{$FG[082]%}"
-red="%{$FG[196]%}"
-yellow="%{$FG[226]%}"
-cyan="%{$FG[051]%}"
-blue="%{$FG[075]%}"
+gray="%{${_e}[38;5;250m%}"
+green="%{${_e}[38;5;77m%}"
+red="%{${_e}[38;5;203m%}"
+yellow="%{${_e}[38;5;214m%}"
+cyan="%{${_e}[38;5;80m%}"
+blue="%{${_e}[38;5;69m%}"
 
 local -A pr_com            # Associative array
 local -a prompt_left_lines # Array parameters
@@ -36,8 +30,8 @@ zstyle ':pr_jrock:*' hooks pwd usr vcs venv npm jobs prompt
 zstyle ':pr_jrock:*' pwd "%~"
 
 # Set vcs_info options
-zstyle ':vcs_info:*' enable git                                           # We are only concerned with git VCS, so enable it
-zstyle ':vcs_info:(git*):*' check-for-changes true                        # We want to monitor changes to the repository's
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:(git*):*' check-for-changes false  # We run git status ourselves in +vi-git-statuses
 # Format of what we will display for the git repo information.
 # %s - The VCS in use (git, hg, svn, etc.).
 # %i - The current revision number or identifier. (SHA we only display 10 chars)
@@ -47,8 +41,8 @@ zstyle ':vcs_info:(git*):*' check-for-changes true                        # We w
 # %m - A "misc" replacement. It is at the discretion of the backend to decide what this replacement expands to.
 #      It is currently used by the hg and git backends to display patch information from the mq and stgit extensions.
 # Format of what we will display during a special action on the repo (Ex. Interactive rebase or merge conflict)
-zstyle ':vcs_info:(git*)' actionformats "(%b|${red}%a${gray}%m)"
-zstyle ':vcs_info:(git*)' formats "(%b%m)"
+zstyle ':vcs_info:(git*)' actionformats "(${cyan}%b${gray}|${red}%a${gray}%m${gray})"
+zstyle ':vcs_info:(git*)' formats "(${cyan}%b${gray}%m${gray})"
 zstyle ':vcs_info:git*+set-message:*' hooks git-statuses git-st
 
 # Run all the prompt hook functions
@@ -136,7 +130,7 @@ function +pr-mode-full() {
     # If we are in a git repo we will have three lines info, git_info, prompt
     [[ -n ${pr_com[vcs]} ]] && lines[1]=(
         ${lines[1]}
-        "${gray}${pr_com[vcs]}${reset}"
+        "${pr_com[vcs]}"
 
     )
 
@@ -172,9 +166,10 @@ function +pr-vcs() {
 function +pr-venv() {
     local -a v_venv
 
+    # Use zsh :t modifier instead of spawning a basename subshell
     [[ -n ${VIRTUAL_ENV} ]] && v_venv=(
         ${blue}
-        $(basename ${VIRTUAL_ENV})
+        ${VIRTUAL_ENV:t}
         ${reset}
     )
 
@@ -240,11 +235,14 @@ function +vi-git-st() {
         --symbolic-full-name --abbrev-ref 2>/dev/null)}
 
     if [[ -n ${remote} ]] ; then
-        ahead=$(git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null | wc -l | sed -e 's/^[ \t]*//')
-        (( $ahead )) && gitstatus+=( "${green}+${ahead}${gray}" )
+        local ahead_out behind_out
+        ahead_out=$(git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null)
+        local ahead=$(( ${#ahead_out} ? ${#${(f)ahead_out}} : 0 ))
+        (( ahead )) && gitstatus+=( "${green}+${ahead}${gray}" )
 
-        behind=$(git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null | wc -l | sed -e 's/^[ \t]*//')
-        (( $behind )) && gitstatus+=( "${red}-${behind}${gray}" )
+        behind_out=$(git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null)
+        local behind=$(( ${#behind_out} ? ${#${(f)behind_out}} : 0 ))
+        (( behind )) && gitstatus+=( "${red}-${behind}${gray}" )
 
         user_data[gitstatus]=${gitstatus}
         hook_com[branch]="${hook_com[branch]} [${remote} ${(j:/:)gitstatus}]"
@@ -258,11 +256,16 @@ function +vi-git-st-compact() {
 }
 
 function +vi-git-statuses() {
-    git status -s >| /tmp/gitstatus.txt
-    staged=$( cat /tmp/gitstatus.txt | grep -c "^[MARCD]")
-    unstaged=$( cat /tmp/gitstatus.txt | grep -c "^.[MARCD]")
-    untracked=$( cat /tmp/gitstatus.txt | grep -c "^\?")
-    stashes=$(git stash list 2>/dev/null | wc -l | sed -e 's/^[ \t]*//')
+    # Run git status once into an array — no temp file, no repeated greps
+    local -a glines
+    glines=(${(f)"$(git status --porcelain 2>/dev/null)"})
+    local staged=0 unstaged=0 untracked=0 line
+    for line in "${glines[@]}"; do
+        [[ ${line[1]} == [MARCD] ]] && (( staged++ ))
+        [[ ${line[2]} == [MARCD] ]] && (( unstaged++ ))
+        [[ ${line[1,2]} == '??' ]]  && (( untracked++ ))
+    done
+    local stashes=${#${(f)$(git stash list 2>/dev/null)}}
 
     if [[ ${staged} != 0 ]] ; then
         hook_com[misc]+=" ${green}${staged}${gray}"
@@ -304,4 +307,33 @@ function precmd_prompt {
 
     # Set the prompts
     PROMPT="${(F)prompt_left_lines} "
+}
+
+# Display a cheatsheet of what each prompt color/symbol means
+function prompt-help() {
+    echo ""
+    echo "  Prompt Color & Symbol Reference"
+    echo "  ────────────────────────────────────────────────"
+    echo ""
+    echo "  Directory"
+    echo "    \e[38;5;77m(~/path/to/dir)\e[0m  green   — directory is writable"
+    echo "    \e[38;5;214m(~/path/to/dir)\e[0m  yellow  — directory is read-only"
+    echo ""
+    echo "  Last Command"
+    echo "    \e[38;5;77m✔\e[0m  green  — last command succeeded (exit 0)"
+    echo "    \e[38;5;203m✘\e[0m  red    — last command failed (non-zero exit)"
+    echo ""
+    echo "  Git Branch  (branch-name [remote +ahead/-behind staged unstaged ?untracked stashes])"
+    echo "    \e[38;5;77m+N\e[0m  green   — N commits ahead of remote"
+    echo "    \e[38;5;203m-N\e[0m  red     — N commits behind remote"
+    echo "    \e[38;5;77mN\e[0m   green   — N staged changes"
+    echo "    \e[38;5;203mN\e[0m   red     — N unstaged changes"
+    echo "    \e[38;5;214mN\e[0m   yellow  — N untracked files"
+    echo "    \e[38;5;250mN\e[0m   gray    — N stashed changesets"
+    echo ""
+    echo "  Extras (shown on info line when active)"
+    echo "    \e[38;5;080mn(name)\e[0m  cyan  — active node version (NODE_NAME)"
+    echo "    \e[38;5;069mv(name)\e[0m  blue  — active Python virtualenv"
+    echo "    \e[38;5;250mN\e[0m       gray  — number of background jobs"
+    echo ""
 }
