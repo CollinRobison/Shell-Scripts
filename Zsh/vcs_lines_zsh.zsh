@@ -12,7 +12,7 @@ autoload -Uz vcs_info
 
 # Define prompt colors as globals so they survive outside source scope
 # Using direct escape sequences avoids the 256-iteration FG/BG build loop
-typeset -g reset gray green red yellow cyan blue
+typeset -g reset gray green red yellow cyan blue purple lavender
 local _e=$'\033'
 reset="%{${reset_color}%}"
 gray="%{${_e}[38;5;250m%}"
@@ -21,6 +21,8 @@ red="%{${_e}[38;5;203m%}"
 yellow="%{${_e}[38;5;214m%}"
 cyan="%{${_e}[38;5;80m%}"
 blue="%{${_e}[38;5;69m%}"
+purple="%{${_e}[38;5;135m%}"
+lavender="%{${_e}[38;5;189m%}"
 
 local -A pr_com            # Associative array
 local -a prompt_left_lines # Array parameters
@@ -41,8 +43,8 @@ zstyle ':vcs_info:(git*):*' check-for-changes false  # We run git status ourselv
 # %m - A "misc" replacement. It is at the discretion of the backend to decide what this replacement expands to.
 #      It is currently used by the hg and git backends to display patch information from the mq and stgit extensions.
 # Format of what we will display during a special action on the repo (Ex. Interactive rebase or merge conflict)
-zstyle ':vcs_info:(git*)' actionformats "(${cyan}%b${gray}|${red}%a${gray}%m${gray})"
-zstyle ':vcs_info:(git*)' formats "(${cyan}%b${gray}%m${gray})"
+zstyle ':vcs_info:(git*)' actionformats "(${lavender}%b${gray}|${red}%a${gray}%m${gray})"
+zstyle ':vcs_info:(git*)' formats "(${lavender}%b${gray}%m${gray})"
 zstyle ':vcs_info:git*+set-message:*' hooks git-statuses git-st
 
 # Run all the prompt hook functions
@@ -206,7 +208,7 @@ function +pr-prompt() {
     # Add the print working directory logic
     zstyle -g i_pwd ":pr_jrock:*" pwd
     v_pwd+=( ${gray}\( )
-    [[ -w $PWD ]] && v_pwd+=( ${green} ) || v_pwd+=( ${yellow} )
+    [[ -w $PWD ]] && v_pwd+=( ${purple} ) || v_pwd+=( ${yellow} )
     v_pwd+=( ${i_pwd} )
     v_pwd+=( ${gray}\) )
     # v_pwd+=( ${account} )
