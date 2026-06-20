@@ -75,6 +75,11 @@ realpath_portable() {
     fi
 }
 
+gitnew() {
+  # Create, checkout, and push a new branch all in one command.
+  git switch -c "$1" && git push -u origin HEAD
+}
+
 function gitcode () {
     # This is a command that will update a local repo to origin and then open it up in VS Code.
 
@@ -114,6 +119,7 @@ function list-alias() {
     printf "\nAliases and Functions:\n---------------------\n
     cls = Clear the terminal screen.\n
     g = git \n
+    gitnew = Create, checkout, and push a new branch all in one command. \n
     gitcode = Pull current git branch to match remote and then open VS Code for a project. \n
     gitgonefeature = Remove all git branches except main and master. \n 
     h = history command. \n
