@@ -73,7 +73,10 @@ ZSH_THEME=""  # Disabled in favor of custom vcs_lines prompt
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search)
 
 source $ZSH/oh-my-zsh.sh
-source ~/Repos/Shell-Scripts/Zsh/vcs_lines_zsh.zsh
+
+zshrc_dir="${${(%):-%x}:A:h}"
+source "${zshrc_dir}/vcs_lines_zsh.zsh"
+
 precmd_functions+=(precmd_prompt)
 # nothing beats a jet 2 holiday
 # User configuration
@@ -104,5 +107,4 @@ precmd_functions+=(precmd_prompt)
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-
 
