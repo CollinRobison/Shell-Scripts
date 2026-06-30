@@ -1,2 +1,2 @@
-# Shell-Scripts
-This is a Repo for various shell scripts I use.
+# Dotfiles
+This is a Repo for dotfiles I use.
